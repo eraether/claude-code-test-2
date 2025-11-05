@@ -1,0 +1,1758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dragon Generator - Create Your Own Dragon</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 3em;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d, #6bcf7f, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .controls::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .controls::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .controls::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #ffd93d;
+        }
+
+        select, input[type="range"] {
+            width: 100%;
+            padding: 8px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 14px;
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        select option {
+            background: #2a3f5f;
+            color: #fff;
+        }
+
+        input[type="range"] {
+            padding: 0;
+            height: 6px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #ffd93d;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #ffd93d;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .color-input-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .color-slider {
+            text-align: center;
+        }
+
+        .color-slider span {
+            display: block;
+            font-size: 0.75em;
+            margin-bottom: 3px;
+            color: #ccc;
+        }
+
+        .color-slider input {
+            width: 100%;
+        }
+
+        .value-display {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            margin-left: 8px;
+            min-width: 35px;
+            text-align: center;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.6);
+        }
+
+        .canvas-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            border-radius: 10px;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #0f0f1e 100%);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+            max-width: 100%;
+            height: auto;
+        }
+
+        .section-header {
+            color: #4ecdc4;
+            font-size: 1.1em;
+            margin: 20px 0 10px 0;
+            padding-bottom: 5px;
+            border-bottom: 2px solid rgba(78, 205, 196, 0.3);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dragon Generator</h1>
+
+        <div class="main-content">
+            <div class="controls">
+                <h3 class="section-header">Body Type</h3>
+
+                <div class="control-group">
+                    <label>Dragon Type</label>
+                    <select id="bodyType">
+                        <option value="classic">Classic Western</option>
+                        <option value="eastern">Eastern Serpentine</option>
+                        <option value="wyvern">Wyvern (2 legs)</option>
+                        <option value="drake">Drake (4 legs, no wings)</option>
+                        <option value="wyrm">Wyrm (No legs)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Body Size <span class="value-display" id="sizeValue">100</span></label>
+                    <input type="range" id="bodySize" min="50" max="150" value="100">
+                </div>
+
+                <div class="control-group">
+                    <label>Body Length <span class="value-display" id="lengthValue">100</span></label>
+                    <input type="range" id="bodyLength" min="60" max="140" value="100">
+                </div>
+
+                <h3 class="section-header">Head & Face</h3>
+
+                <div class="control-group">
+                    <label>Head Shape</label>
+                    <select id="headShape">
+                        <option value="angular">Angular/Sharp</option>
+                        <option value="rounded">Rounded</option>
+                        <option value="crocodilian">Crocodilian</option>
+                        <option value="serpentine">Serpentine</option>
+                        <option value="skeletal">Skeletal</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Horn Style</label>
+                    <select id="hornStyle">
+                        <option value="none">None</option>
+                        <option value="straight">Straight Spikes</option>
+                        <option value="curved">Curved Horns</option>
+                        <option value="ram">Ram Horns</option>
+                        <option value="antler">Antlers</option>
+                        <option value="crown">Crown of Horns</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Eye Style</label>
+                    <select id="eyeStyle">
+                        <option value="slit">Reptilian Slit</option>
+                        <option value="round">Round</option>
+                        <option value="glowing">Glowing</option>
+                        <option value="mystical">Mystical</option>
+                        <option value="demonic">Demonic</option>
+                    </select>
+                </div>
+
+                <h3 class="section-header">Wings</h3>
+
+                <div class="control-group">
+                    <label>Wing Type</label>
+                    <select id="wingType">
+                        <option value="bat">Bat Wings</option>
+                        <option value="feathered">Feathered Wings</option>
+                        <option value="insect">Insect Wings</option>
+                        <option value="ethereal">Ethereal Wings</option>
+                        <option value="skeletal">Skeletal Wings</option>
+                        <option value="none">No Wings</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Wing Size <span class="value-display" id="wingSizeValue">100</span></label>
+                    <input type="range" id="wingSize" min="50" max="150" value="100">
+                </div>
+
+                <h3 class="section-header">Colors</h3>
+
+                <div class="control-group">
+                    <label>Body Color</label>
+                    <div class="color-input-group">
+                        <div class="color-slider">
+                            <span>R</span>
+                            <input type="range" id="bodyColorR" min="0" max="255" value="180">
+                        </div>
+                        <div class="color-slider">
+                            <span>G</span>
+                            <input type="range" id="bodyColorG" min="0" max="255" value="50">
+                        </div>
+                        <div class="color-slider">
+                            <span>B</span>
+                            <input type="range" id="bodyColorB" min="0" max="255" value="50">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Belly Color</label>
+                    <div class="color-input-group">
+                        <div class="color-slider">
+                            <span>R</span>
+                            <input type="range" id="bellyColorR" min="0" max="255" value="220">
+                        </div>
+                        <div class="color-slider">
+                            <span>G</span>
+                            <input type="range" id="bellyColorG" min="0" max="255" value="180">
+                        </div>
+                        <div class="color-slider">
+                            <span>B</span>
+                            <input type="range" id="bellyColorB" min="0" max="255" value="120">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Eye Color</label>
+                    <div class="color-input-group">
+                        <div class="color-slider">
+                            <span>R</span>
+                            <input type="range" id="eyeColorR" min="0" max="255" value="255">
+                        </div>
+                        <div class="color-slider">
+                            <span>G</span>
+                            <input type="range" id="eyeColorG" min="0" max="255" value="200">
+                        </div>
+                        <div class="color-slider">
+                            <span>B</span>
+                            <input type="range" id="eyeColorB" min="0" max="255" value="0">
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="section-header">Details</h3>
+
+                <div class="control-group">
+                    <label>Scale Pattern</label>
+                    <select id="scalePattern">
+                        <option value="smooth">Smooth</option>
+                        <option value="scales">Regular Scales</option>
+                        <option value="plates">Armored Plates</option>
+                        <option value="spikes">Spiky</option>
+                        <option value="crystalline">Crystalline</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Tail Style</label>
+                    <select id="tailStyle">
+                        <option value="tapered">Tapered</option>
+                        <option value="spiked">Spiked</option>
+                        <option value="club">Club/Mace</option>
+                        <option value="blade">Blade</option>
+                        <option value="serpent">Serpent Coil</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Breath Effect</label>
+                    <select id="breathEffect">
+                        <option value="none">None</option>
+                        <option value="fire">Fire</option>
+                        <option value="ice">Ice</option>
+                        <option value="lightning">Lightning</option>
+                        <option value="poison">Poison Gas</option>
+                        <option value="cosmic">Cosmic Energy</option>
+                    </select>
+                </div>
+
+                <h3 class="section-header">Animation</h3>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="animateWings">
+                    <label for="animateWings">Animate Wings</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="animateBreath">
+                    <label for="animateBreath">Animate Breath</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="glowingEyes">
+                    <label for="glowingEyes">Glowing Eyes</label>
+                </div>
+
+                <button class="btn-primary" onclick="randomizeDragon()">Randomize Dragon</button>
+                <button class="btn-secondary" onclick="saveDragon()">Save as Image</button>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="dragonCanvas" width="800" height="600"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('dragonCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let animationFrame;
+        let time = 0;
+
+        // Dragon configuration
+        const dragon = {
+            bodyType: 'classic',
+            bodySize: 100,
+            bodyLength: 100,
+            headShape: 'angular',
+            hornStyle: 'straight',
+            eyeStyle: 'slit',
+            wingType: 'bat',
+            wingSize: 100,
+            bodyColor: { r: 180, g: 50, b: 50 },
+            bellyColor: { r: 220, g: 180, b: 120 },
+            eyeColor: { r: 255, g: 200, b: 0 },
+            scalePattern: 'smooth',
+            tailStyle: 'tapered',
+            breathEffect: 'none',
+            animateWings: false,
+            animateBreath: false,
+            glowingEyes: false
+        };
+
+        // Set up event listeners
+        function setupControls() {
+            document.getElementById('bodyType').addEventListener('change', (e) => {
+                dragon.bodyType = e.target.value;
+                drawDragon();
+            });
+
+            document.getElementById('bodySize').addEventListener('input', (e) => {
+                dragon.bodySize = parseInt(e.target.value);
+                document.getElementById('sizeValue').textContent = e.target.value;
+                drawDragon();
+            });
+
+            document.getElementById('bodyLength').addEventListener('input', (e) => {
+                dragon.bodyLength = parseInt(e.target.value);
+                document.getElementById('lengthValue').textContent = e.target.value;
+                drawDragon();
+            });
+
+            document.getElementById('headShape').addEventListener('change', (e) => {
+                dragon.headShape = e.target.value;
+                drawDragon();
+            });
+
+            document.getElementById('hornStyle').addEventListener('change', (e) => {
+                dragon.hornStyle = e.target.value;
+                drawDragon();
+            });
+
+            document.getElementById('eyeStyle').addEventListener('change', (e) => {
+                dragon.eyeStyle = e.target.value;
+                drawDragon();
+            });
+
+            document.getElementById('wingType').addEventListener('change', (e) => {
+                dragon.wingType = e.target.value;
+                drawDragon();
+            });
+
+            document.getElementById('wingSize').addEventListener('input', (e) => {
+                dragon.wingSize = parseInt(e.target.value);
+                document.getElementById('wingSizeValue').textContent = e.target.value;
+                drawDragon();
+            });
+
+            // Color sliders
+            ['R', 'G', 'B'].forEach(channel => {
+                ['body', 'belly', 'eye'].forEach(part => {
+                    document.getElementById(`${part}Color${channel}`).addEventListener('input', (e) => {
+                        dragon[`${part}Color`][channel.toLowerCase()] = parseInt(e.target.value);
+                        drawDragon();
+                    });
+                });
+            });
+
+            document.getElementById('scalePattern').addEventListener('change', (e) => {
+                dragon.scalePattern = e.target.value;
+                drawDragon();
+            });
+
+            document.getElementById('tailStyle').addEventListener('change', (e) => {
+                dragon.tailStyle = e.target.value;
+                drawDragon();
+            });
+
+            document.getElementById('breathEffect').addEventListener('change', (e) => {
+                dragon.breathEffect = e.target.value;
+                drawDragon();
+            });
+
+            document.getElementById('animateWings').addEventListener('change', (e) => {
+                dragon.animateWings = e.target.checked;
+                if (dragon.animateWings || dragon.animateBreath) {
+                    startAnimation();
+                } else {
+                    stopAnimation();
+                }
+            });
+
+            document.getElementById('animateBreath').addEventListener('change', (e) => {
+                dragon.animateBreath = e.target.checked;
+                if (dragon.animateWings || dragon.animateBreath) {
+                    startAnimation();
+                } else {
+                    stopAnimation();
+                }
+            });
+
+            document.getElementById('glowingEyes').addEventListener('change', (e) => {
+                dragon.glowingEyes = e.target.checked;
+                drawDragon();
+            });
+        }
+
+        function startAnimation() {
+            if (!animationFrame) {
+                animate();
+            }
+        }
+
+        function stopAnimation() {
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+                animationFrame = null;
+                drawDragon();
+            }
+        }
+
+        function animate() {
+            time += 0.05;
+            drawDragon();
+            animationFrame = requestAnimationFrame(animate);
+        }
+
+        function drawDragon() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const scale = dragon.bodySize / 100;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            ctx.save();
+            ctx.translate(centerX, centerY);
+
+            // Draw in order: wings (back), body, head, effects (front)
+            if (dragon.wingType !== 'none' && dragon.bodyType !== 'wyrm' && dragon.bodyType !== 'drake') {
+                drawWings(scale);
+            }
+
+            drawBody(scale);
+            drawTail(scale);
+            drawLegs(scale);
+            drawHead(scale);
+
+            if (dragon.breathEffect !== 'none') {
+                drawBreathEffect(scale);
+            }
+
+            ctx.restore();
+        }
+
+        function getBodyColor() {
+            return `rgb(${dragon.bodyColor.r}, ${dragon.bodyColor.g}, ${dragon.bodyColor.b})`;
+        }
+
+        function getBellyColor() {
+            return `rgb(${dragon.bellyColor.r}, ${dragon.bellyColor.g}, ${dragon.bellyColor.b})`;
+        }
+
+        function getEyeColor() {
+            return `rgb(${dragon.eyeColor.r}, ${dragon.eyeColor.g}, ${dragon.eyeColor.b})`;
+        }
+
+        function getDarkerColor(color) {
+            return `rgb(${Math.max(0, color.r - 40)}, ${Math.max(0, color.g - 40)}, ${Math.max(0, color.b - 40)})`;
+        }
+
+        function drawWings(scale) {
+            const wingOffset = dragon.animateWings ? Math.sin(time) * 0.15 : 0;
+            const wingSize = dragon.wingSize / 100 * scale;
+
+            ctx.save();
+
+            // Left wing
+            ctx.save();
+            ctx.rotate(-0.3 + wingOffset);
+            drawSingleWing(-150 * scale, -50 * scale, wingSize, true);
+            ctx.restore();
+
+            // Right wing
+            ctx.save();
+            ctx.rotate(0.3 - wingOffset);
+            drawSingleWing(150 * scale, -50 * scale, wingSize, false);
+            ctx.restore();
+
+            ctx.restore();
+        }
+
+        function drawSingleWing(x, y, size, flipX) {
+            const flip = flipX ? -1 : 1;
+
+            switch(dragon.wingType) {
+                case 'bat':
+                    drawBatWing(x, y, size, flip);
+                    break;
+                case 'feathered':
+                    drawFeatheredWing(x, y, size, flip);
+                    break;
+                case 'insect':
+                    drawInsectWing(x, y, size, flip);
+                    break;
+                case 'ethereal':
+                    drawEtherealWing(x, y, size, flip);
+                    break;
+                case 'skeletal':
+                    drawSkeletalWing(x, y, size, flip);
+                    break;
+            }
+        }
+
+        function drawBatWing(x, y, size, flip) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(flip, 1);
+
+            // Wing membrane
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.quadraticCurveTo(50 * size, -80 * size, 120 * size, -60 * size);
+            ctx.quadraticCurveTo(100 * size, -20 * size, 90 * size, 20 * size);
+            ctx.quadraticCurveTo(60 * size, 0, 0, 30 * size);
+            ctx.closePath();
+
+            const gradient = ctx.createLinearGradient(0, 0, 120 * size, 0);
+            gradient.addColorStop(0, getDarkerColor(dragon.bodyColor));
+            gradient.addColorStop(1, getBodyColor());
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Wing fingers
+            ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+            ctx.lineWidth = 3 * size;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(120 * size, -60 * size);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawFeatheredWing(x, y, size, flip) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(flip, 1);
+
+            // Draw feathers
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 0.5 - Math.PI * 0.25;
+                const length = 80 * size - i * 8 * size;
+
+                ctx.save();
+                ctx.rotate(angle);
+
+                ctx.beginPath();
+                ctx.ellipse(length / 2, 0, length / 2, 12 * size, 0, 0, Math.PI * 2);
+                ctx.fillStyle = getBodyColor();
+                ctx.fill();
+                ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            ctx.restore();
+        }
+
+        function drawInsectWing(x, y, size, flip) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(flip, 1);
+
+            ctx.beginPath();
+            ctx.ellipse(60 * size, -20 * size, 70 * size, 40 * size, 0, 0, Math.PI * 2);
+
+            const gradient = ctx.createRadialGradient(60 * size, -20 * size, 0, 60 * size, -20 * size, 70 * size);
+            gradient.addColorStop(0, `rgba(${dragon.bodyColor.r}, ${dragon.bodyColor.g}, ${dragon.bodyColor.b}, 0.3)`);
+            gradient.addColorStop(1, `rgba(${dragon.bodyColor.r}, ${dragon.bodyColor.g}, ${dragon.bodyColor.b}, 0.1)`);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            ctx.strokeStyle = getBodyColor();
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Veins
+            ctx.strokeStyle = `rgba(${dragon.bodyColor.r}, ${dragon.bodyColor.g}, ${dragon.bodyColor.b}, 0.5)`;
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 5; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(60 * size + i * 15 * size, -20 * size + (i - 2) * 15 * size);
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+
+        function drawEtherealWing(x, y, size, flip) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(flip, 1);
+
+            const gradient = ctx.createRadialGradient(50 * size, -20 * size, 0, 50 * size, -20 * size, 100 * size);
+            gradient.addColorStop(0, `rgba(${dragon.bodyColor.r}, ${dragon.bodyColor.g}, ${dragon.bodyColor.b}, 0.6)`);
+            gradient.addColorStop(0.5, `rgba(${dragon.eyeColor.r}, ${dragon.eyeColor.g}, ${dragon.eyeColor.b}, 0.3)`);
+            gradient.addColorStop(1, 'rgba(255, 255, 255, 0.1)');
+
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            for (let i = 0; i <= 20; i++) {
+                const angle = (i / 20) * Math.PI - Math.PI / 2;
+                const radius = 100 * size * (1 + Math.sin(i * 0.5 + time) * 0.1);
+                ctx.lineTo(Math.cos(angle) * radius, Math.sin(angle) * radius);
+            }
+            ctx.closePath();
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawSkeletalWing(x, y, size, flip) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.scale(flip, 1);
+
+            // Bones
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 4 * size;
+
+            const fingers = 4;
+            for (let i = 0; i < fingers; i++) {
+                const angle = (i / fingers) * Math.PI * 0.6 - Math.PI * 0.3;
+                const length = 100 * size;
+
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(Math.cos(angle) * length, Math.sin(angle) * length);
+                ctx.stroke();
+            }
+
+            // Membrane (torn/translucent)
+            ctx.globalAlpha = 0.2;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            for (let i = 0; i < fingers; i++) {
+                const angle = (i / fingers) * Math.PI * 0.6 - Math.PI * 0.3;
+                const length = 100 * size;
+                ctx.lineTo(Math.cos(angle) * length, Math.sin(angle) * length);
+            }
+            ctx.closePath();
+            ctx.fillStyle = getDarkerColor(dragon.bodyColor);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            ctx.restore();
+        }
+
+        function drawBody(scale) {
+            const lengthScale = dragon.bodyLength / 100;
+
+            switch(dragon.bodyType) {
+                case 'classic':
+                case 'wyvern':
+                    drawClassicBody(scale, lengthScale);
+                    break;
+                case 'eastern':
+                    drawEasternBody(scale, lengthScale);
+                    break;
+                case 'drake':
+                    drawDrakeBody(scale, lengthScale);
+                    break;
+                case 'wyrm':
+                    drawWyrmBody(scale, lengthScale);
+                    break;
+            }
+        }
+
+        function drawClassicBody(scale, lengthScale) {
+            // Main body
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 80 * scale * lengthScale, 60 * scale, 0, 0, Math.PI * 2);
+            ctx.fillStyle = getBodyColor();
+            ctx.fill();
+            ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Belly
+            ctx.beginPath();
+            ctx.ellipse(0, 15 * scale, 50 * scale * lengthScale, 35 * scale, 0, 0, Math.PI * 2);
+            ctx.fillStyle = getBellyColor();
+            ctx.fill();
+
+            // Scales/Pattern
+            drawScalePattern(0, 0, 80 * scale * lengthScale, 60 * scale, scale);
+        }
+
+        function drawEasternBody(scale, lengthScale) {
+            const segments = 8;
+            const segmentLength = 40 * scale * lengthScale;
+
+            for (let i = 0; i < segments; i++) {
+                const x = (i - segments / 2) * segmentLength / segments;
+                const y = Math.sin(i * 0.5 + time * 0.5) * 20 * scale;
+                const radius = 30 * scale * (1 - i / segments * 0.3);
+
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fillStyle = getBodyColor();
+                ctx.fill();
+                ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+
+        function drawDrakeBody(scale, lengthScale) {
+            // Larger, bulkier body
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 90 * scale * lengthScale, 70 * scale, 0, 0, Math.PI * 2);
+            ctx.fillStyle = getBodyColor();
+            ctx.fill();
+            ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Belly
+            ctx.beginPath();
+            ctx.ellipse(0, 20 * scale, 60 * scale * lengthScale, 40 * scale, 0, 0, Math.PI * 2);
+            ctx.fillStyle = getBellyColor();
+            ctx.fill();
+
+            drawScalePattern(0, 0, 90 * scale * lengthScale, 70 * scale, scale);
+        }
+
+        function drawWyrmBody(scale, lengthScale) {
+            const segments = 12;
+            const segmentLength = 60 * scale * lengthScale;
+
+            ctx.beginPath();
+            for (let i = 0; i < segments; i++) {
+                const t = i / segments;
+                const x = (t - 0.5) * segmentLength;
+                const y = Math.sin(t * Math.PI * 3 + time) * 40 * scale;
+                const radius = 25 * scale * (1 - Math.abs(t - 0.5) * 0.5);
+
+                if (i === 0) {
+                    ctx.moveTo(x + radius, y);
+                }
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+            }
+            ctx.fillStyle = getBodyColor();
+            ctx.fill();
+            ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        function drawScalePattern(x, y, width, height, scale) {
+            if (dragon.scalePattern === 'smooth') return;
+
+            ctx.save();
+            ctx.globalAlpha = 0.3;
+
+            switch(dragon.scalePattern) {
+                case 'scales':
+                    for (let i = -width; i < width; i += 15 * scale) {
+                        for (let j = -height; j < height; j += 15 * scale) {
+                            ctx.beginPath();
+                            ctx.arc(i, j, 6 * scale, 0, Math.PI);
+                            ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+                            ctx.lineWidth = 1;
+                            ctx.stroke();
+                        }
+                    }
+                    break;
+                case 'plates':
+                    for (let i = -width; i < width; i += 25 * scale) {
+                        for (let j = -height; j < height; j += 20 * scale) {
+                            ctx.beginPath();
+                            ctx.rect(i, j, 20 * scale, 15 * scale);
+                            ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+                            ctx.lineWidth = 2;
+                            ctx.stroke();
+                        }
+                    }
+                    break;
+                case 'spikes':
+                    for (let i = -width; i < width; i += 20 * scale) {
+                        ctx.beginPath();
+                        ctx.moveTo(i, -height);
+                        ctx.lineTo(i + 5 * scale, -height - 10 * scale);
+                        ctx.lineTo(i + 10 * scale, -height);
+                        ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                    }
+                    break;
+                case 'crystalline':
+                    for (let i = -width; i < width; i += 20 * scale) {
+                        for (let j = -height; j < height; j += 20 * scale) {
+                            ctx.beginPath();
+                            ctx.moveTo(i, j - 8 * scale);
+                            ctx.lineTo(i + 6 * scale, j);
+                            ctx.lineTo(i, j + 8 * scale);
+                            ctx.lineTo(i - 6 * scale, j);
+                            ctx.closePath();
+                            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                            ctx.lineWidth = 1;
+                            ctx.stroke();
+                        }
+                    }
+                    break;
+            }
+
+            ctx.restore();
+        }
+
+        function drawLegs(scale) {
+            if (dragon.bodyType === 'wyrm') return;
+
+            const bodyLength = dragon.bodyLength / 100;
+
+            if (dragon.bodyType === 'wyvern') {
+                // Only back legs
+                drawLeg(-30 * scale * bodyLength, 50 * scale, scale);
+                drawLeg(30 * scale * bodyLength, 50 * scale, scale);
+            } else {
+                // Front legs
+                drawLeg(-50 * scale * bodyLength, 40 * scale, scale);
+                drawLeg(50 * scale * bodyLength, 40 * scale, scale);
+                // Back legs
+                drawLeg(-30 * scale * bodyLength, 50 * scale, scale);
+                drawLeg(30 * scale * bodyLength, 50 * scale, scale);
+            }
+        }
+
+        function drawLeg(x, y, scale) {
+            ctx.save();
+            ctx.translate(x, y);
+
+            // Upper leg
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(10 * scale, 40 * scale);
+            ctx.strokeStyle = getBodyColor();
+            ctx.lineWidth = 12 * scale;
+            ctx.stroke();
+
+            // Lower leg
+            ctx.beginPath();
+            ctx.moveTo(10 * scale, 40 * scale);
+            ctx.lineTo(15 * scale, 75 * scale);
+            ctx.strokeStyle = getBodyColor();
+            ctx.lineWidth = 10 * scale;
+            ctx.stroke();
+
+            // Foot/claws
+            ctx.beginPath();
+            ctx.moveTo(15 * scale, 75 * scale);
+            ctx.lineTo(5 * scale, 85 * scale);
+            ctx.lineTo(15 * scale, 85 * scale);
+            ctx.lineTo(25 * scale, 85 * scale);
+            ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+            ctx.lineWidth = 6 * scale;
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawTail(scale) {
+            const lengthScale = dragon.bodyLength / 100;
+            const tailX = -100 * scale * lengthScale;
+
+            ctx.save();
+
+            switch(dragon.tailStyle) {
+                case 'tapered':
+                    drawTaperedTail(tailX, 0, scale);
+                    break;
+                case 'spiked':
+                    drawSpikedTail(tailX, 0, scale);
+                    break;
+                case 'club':
+                    drawClubTail(tailX, 0, scale);
+                    break;
+                case 'blade':
+                    drawBladeTail(tailX, 0, scale);
+                    break;
+                case 'serpent':
+                    drawSerpentTail(tailX, 0, scale);
+                    break;
+            }
+
+            ctx.restore();
+        }
+
+        function drawTaperedTail(x, y, scale) {
+            ctx.beginPath();
+            ctx.moveTo(x + 100 * scale, y);
+            ctx.quadraticCurveTo(x - 50 * scale, y + 30 * scale, x - 120 * scale, y + 10 * scale);
+            ctx.lineTo(x - 120 * scale, y - 10 * scale);
+            ctx.quadraticCurveTo(x - 50 * scale, y - 30 * scale, x + 100 * scale, y);
+            ctx.fillStyle = getBodyColor();
+            ctx.fill();
+            ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        function drawSpikedTail(x, y, scale) {
+            drawTaperedTail(x, y, scale);
+
+            // Add spikes
+            for (let i = 0; i < 5; i++) {
+                const spikeX = x + 100 * scale - i * 40 * scale;
+                const spikeY = y - 15 * scale;
+
+                ctx.beginPath();
+                ctx.moveTo(spikeX, spikeY);
+                ctx.lineTo(spikeX - 5 * scale, spikeY - 20 * scale);
+                ctx.lineTo(spikeX + 5 * scale, spikeY);
+                ctx.closePath();
+                ctx.fillStyle = getDarkerColor(dragon.bodyColor);
+                ctx.fill();
+            }
+        }
+
+        function drawClubTail(x, y, scale) {
+            // Tail
+            ctx.beginPath();
+            ctx.moveTo(x + 100 * scale, y);
+            ctx.lineTo(x - 80 * scale, y);
+            ctx.strokeStyle = getBodyColor();
+            ctx.lineWidth = 20 * scale;
+            ctx.stroke();
+
+            // Club
+            ctx.beginPath();
+            ctx.arc(x - 100 * scale, y, 30 * scale, 0, Math.PI * 2);
+            ctx.fillStyle = getBodyColor();
+            ctx.fill();
+            ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Spikes on club
+            for (let i = 0; i < 6; i++) {
+                const angle = (i / 6) * Math.PI * 2;
+                const spikeX = x - 100 * scale + Math.cos(angle) * 30 * scale;
+                const spikeY = y + Math.sin(angle) * 30 * scale;
+
+                ctx.beginPath();
+                ctx.moveTo(spikeX, spikeY);
+                ctx.lineTo(spikeX + Math.cos(angle) * 15 * scale, spikeY + Math.sin(angle) * 15 * scale);
+                ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+                ctx.lineWidth = 4 * scale;
+                ctx.stroke();
+            }
+        }
+
+        function drawBladeTail(x, y, scale) {
+            // Tail
+            ctx.beginPath();
+            ctx.moveTo(x + 100 * scale, y);
+            ctx.lineTo(x - 60 * scale, y);
+            ctx.strokeStyle = getBodyColor();
+            ctx.lineWidth = 18 * scale;
+            ctx.stroke();
+
+            // Blade
+            ctx.beginPath();
+            ctx.moveTo(x - 60 * scale, y - 20 * scale);
+            ctx.lineTo(x - 130 * scale, y);
+            ctx.lineTo(x - 60 * scale, y + 20 * scale);
+            ctx.closePath();
+
+            const gradient = ctx.createLinearGradient(x - 130 * scale, 0, x - 60 * scale, 0);
+            gradient.addColorStop(0, '#c0c0c0');
+            gradient.addColorStop(1, '#ffffff');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            ctx.strokeStyle = '#888';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        function drawSerpentTail(x, y, scale) {
+            const segments = 10;
+
+            ctx.beginPath();
+            for (let i = 0; i < segments; i++) {
+                const t = i / segments;
+                const segX = x + 100 * scale - t * 200 * scale;
+                const segY = y + Math.sin(t * Math.PI * 2 + time) * 30 * scale;
+                const width = (1 - t) * 20 * scale;
+
+                if (i === 0) {
+                    ctx.moveTo(segX, segY);
+                } else {
+                    ctx.lineTo(segX, segY);
+                }
+                ctx.strokeStyle = getBodyColor();
+                ctx.lineWidth = width;
+                ctx.stroke();
+            }
+        }
+
+        function drawHead(scale) {
+            const headX = 80 * scale * (dragon.bodyLength / 100);
+            const headY = -40 * scale;
+
+            ctx.save();
+            ctx.translate(headX, headY);
+
+            // Neck
+            ctx.beginPath();
+            ctx.moveTo(-50 * scale, 40 * scale);
+            ctx.quadraticCurveTo(-20 * scale, 20 * scale, 0, 0);
+            ctx.strokeStyle = getBodyColor();
+            ctx.lineWidth = 35 * scale;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+
+            // Draw head based on shape
+            switch(dragon.headShape) {
+                case 'angular':
+                    drawAngularHead(scale);
+                    break;
+                case 'rounded':
+                    drawRoundedHead(scale);
+                    break;
+                case 'crocodilian':
+                    drawCrocodilianHead(scale);
+                    break;
+                case 'serpentine':
+                    drawSerpentineHead(scale);
+                    break;
+                case 'skeletal':
+                    drawSkeletalHead(scale);
+                    break;
+            }
+
+            // Draw horns
+            drawHorns(scale);
+
+            // Draw eyes
+            drawEyes(scale);
+
+            ctx.restore();
+        }
+
+        function drawAngularHead(scale) {
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(60 * scale, -10 * scale);
+            ctx.lineTo(70 * scale, 10 * scale);
+            ctx.lineTo(60 * scale, 25 * scale);
+            ctx.lineTo(0, 30 * scale);
+            ctx.closePath();
+            ctx.fillStyle = getBodyColor();
+            ctx.fill();
+            ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Jaw
+            ctx.beginPath();
+            ctx.moveTo(60 * scale, 25 * scale);
+            ctx.lineTo(70 * scale, 30 * scale);
+            ctx.lineTo(60 * scale, 35 * scale);
+            ctx.lineTo(0, 30 * scale);
+            ctx.closePath();
+            ctx.fillStyle = getBellyColor();
+            ctx.fill();
+            ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        function drawRoundedHead(scale) {
+            ctx.beginPath();
+            ctx.ellipse(30 * scale, 15 * scale, 40 * scale, 25 * scale, 0, 0, Math.PI * 2);
+            ctx.fillStyle = getBodyColor();
+            ctx.fill();
+            ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Snout
+            ctx.beginPath();
+            ctx.ellipse(60 * scale, 15 * scale, 15 * scale, 12 * scale, 0, 0, Math.PI * 2);
+            ctx.fillStyle = getBodyColor();
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        function drawCrocodilianHead(scale) {
+            ctx.beginPath();
+            ctx.moveTo(0, 10 * scale);
+            ctx.lineTo(80 * scale, 15 * scale);
+            ctx.lineTo(80 * scale, 25 * scale);
+            ctx.lineTo(0, 30 * scale);
+            ctx.closePath();
+            ctx.fillStyle = getBodyColor();
+            ctx.fill();
+            ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Eyes on top
+            ctx.beginPath();
+            ctx.ellipse(20 * scale, 5 * scale, 15 * scale, 18 * scale, 0, 0, Math.PI * 2);
+            ctx.fillStyle = getBodyColor();
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        function drawSerpentineHead(scale) {
+            ctx.beginPath();
+            ctx.ellipse(35 * scale, 15 * scale, 35 * scale, 20 * scale, 0, 0, Math.PI * 2);
+            ctx.fillStyle = getBodyColor();
+            ctx.fill();
+            ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Pointed snout
+            ctx.beginPath();
+            ctx.moveTo(70 * scale, 15 * scale);
+            ctx.lineTo(85 * scale, 12 * scale);
+            ctx.lineTo(85 * scale, 18 * scale);
+            ctx.closePath();
+            ctx.fillStyle = getBodyColor();
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        function drawSkeletalHead(scale) {
+            // Skull outline
+            ctx.beginPath();
+            ctx.ellipse(30 * scale, 15 * scale, 35 * scale, 22 * scale, 0, 0, Math.PI * 2);
+            ctx.fillStyle = '#e0e0e0';
+            ctx.fill();
+            ctx.strokeStyle = '#a0a0a0';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Jaw
+            ctx.beginPath();
+            ctx.moveTo(65 * scale, 15 * scale);
+            ctx.lineTo(75 * scale, 20 * scale);
+            ctx.lineTo(65 * scale, 25 * scale);
+            ctx.stroke();
+        }
+
+        function drawHorns(scale) {
+            if (dragon.hornStyle === 'none') return;
+
+            switch(dragon.hornStyle) {
+                case 'straight':
+                    // Two straight horns
+                    ctx.beginPath();
+                    ctx.moveTo(20 * scale, 0);
+                    ctx.lineTo(15 * scale, -30 * scale);
+                    ctx.moveTo(40 * scale, 0);
+                    ctx.lineTo(35 * scale, -30 * scale);
+                    ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+                    ctx.lineWidth = 6 * scale;
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+                    break;
+                case 'curved':
+                    // Curved horns
+                    ctx.beginPath();
+                    ctx.moveTo(20 * scale, 0);
+                    ctx.quadraticCurveTo(10 * scale, -20 * scale, 0, -35 * scale);
+                    ctx.moveTo(40 * scale, 0);
+                    ctx.quadraticCurveTo(50 * scale, -20 * scale, 60 * scale, -35 * scale);
+                    ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+                    ctx.lineWidth = 6 * scale;
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+                    break;
+                case 'ram':
+                    // Ram-like curved horns
+                    ctx.beginPath();
+                    ctx.arc(15 * scale, -5 * scale, 25 * scale, -Math.PI, 0);
+                    ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+                    ctx.lineWidth = 8 * scale;
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.arc(45 * scale, -5 * scale, 25 * scale, -Math.PI, 0);
+                    ctx.stroke();
+                    break;
+                case 'antler':
+                    // Branching antlers
+                    for (let side of [-1, 1]) {
+                        const baseX = 30 * scale + side * 10 * scale;
+                        ctx.beginPath();
+                        ctx.moveTo(baseX, 0);
+                        ctx.lineTo(baseX + side * 5 * scale, -25 * scale);
+                        ctx.moveTo(baseX + side * 5 * scale, -15 * scale);
+                        ctx.lineTo(baseX + side * 15 * scale, -20 * scale);
+                        ctx.moveTo(baseX + side * 5 * scale, -20 * scale);
+                        ctx.lineTo(baseX + side * 15 * scale, -30 * scale);
+                        ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+                        ctx.lineWidth = 5 * scale;
+                        ctx.lineCap = 'round';
+                        ctx.stroke();
+                    }
+                    break;
+                case 'crown':
+                    // Crown of horns
+                    for (let i = 0; i < 5; i++) {
+                        const x = 10 * scale + i * 12 * scale;
+                        const height = (i === 2 ? 35 : 25) * scale;
+                        ctx.beginPath();
+                        ctx.moveTo(x, 0);
+                        ctx.lineTo(x, -height);
+                        ctx.strokeStyle = getDarkerColor(dragon.bodyColor);
+                        ctx.lineWidth = 5 * scale;
+                        ctx.lineCap = 'round';
+                        ctx.stroke();
+                    }
+                    break;
+            }
+        }
+
+        function drawEyes(scale) {
+            const eyeX1 = 25 * scale;
+            const eyeX2 = 45 * scale;
+            const eyeY = dragon.headShape === 'crocodilian' ? 5 * scale : 12 * scale;
+
+            drawSingleEye(eyeX1, eyeY, scale);
+            drawSingleEye(eyeX2, eyeY, scale);
+        }
+
+        function drawSingleEye(x, y, scale) {
+            const eyeSize = 8 * scale;
+
+            // Glow effect if enabled
+            if (dragon.glowingEyes) {
+                const gradient = ctx.createRadialGradient(x, y, 0, x, y, eyeSize * 3);
+                gradient.addColorStop(0, getEyeColor());
+                gradient.addColorStop(1, 'transparent');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x - eyeSize * 3, y - eyeSize * 3, eyeSize * 6, eyeSize * 6);
+            }
+
+            switch(dragon.eyeStyle) {
+                case 'slit':
+                    ctx.beginPath();
+                    ctx.ellipse(x, y, eyeSize, eyeSize * 1.3, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = getEyeColor();
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.ellipse(x, y, eyeSize * 0.3, eyeSize * 1.2, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = '#000';
+                    ctx.fill();
+                    break;
+                case 'round':
+                    ctx.beginPath();
+                    ctx.arc(x, y, eyeSize, 0, Math.PI * 2);
+                    ctx.fillStyle = getEyeColor();
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, eyeSize * 0.5, 0, Math.PI * 2);
+                    ctx.fillStyle = '#000';
+                    ctx.fill();
+                    break;
+                case 'glowing':
+                    const glowGrad = ctx.createRadialGradient(x, y, 0, x, y, eyeSize);
+                    glowGrad.addColorStop(0, '#fff');
+                    glowGrad.addColorStop(0.5, getEyeColor());
+                    glowGrad.addColorStop(1, getDarkerColor(dragon.eyeColor));
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, eyeSize, 0, Math.PI * 2);
+                    ctx.fillStyle = glowGrad;
+                    ctx.fill();
+                    break;
+                case 'mystical':
+                    ctx.beginPath();
+                    ctx.arc(x, y, eyeSize, 0, Math.PI * 2);
+                    ctx.fillStyle = getEyeColor();
+                    ctx.fill();
+
+                    // Draw mystical symbol
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y - eyeSize * 0.5);
+                    ctx.lineTo(x, y + eyeSize * 0.5);
+                    ctx.moveTo(x - eyeSize * 0.5, y);
+                    ctx.lineTo(x + eyeSize * 0.5, y);
+                    ctx.stroke();
+                    break;
+                case 'demonic':
+                    ctx.beginPath();
+                    ctx.ellipse(x, y, eyeSize, eyeSize * 1.5, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = '#ff0000';
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.ellipse(x, y, eyeSize * 0.3, eyeSize * 1.3, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = '#000';
+                    ctx.fill();
+                    break;
+            }
+        }
+
+        function drawBreathEffect(scale) {
+            if (!dragon.animateBreath && dragon.breathEffect !== 'none') return;
+
+            const headX = 80 * scale * (dragon.bodyLength / 100);
+            const headY = -40 * scale;
+            const breathX = headX + 85 * scale;
+            const breathY = headY + 15 * scale;
+
+            ctx.save();
+            ctx.globalAlpha = 0.7;
+
+            switch(dragon.breathEffect) {
+                case 'fire':
+                    drawFireBreath(breathX, breathY, scale);
+                    break;
+                case 'ice':
+                    drawIceBreath(breathX, breathY, scale);
+                    break;
+                case 'lightning':
+                    drawLightningBreath(breathX, breathY, scale);
+                    break;
+                case 'poison':
+                    drawPoisonBreath(breathX, breathY, scale);
+                    break;
+                case 'cosmic':
+                    drawCosmicBreath(breathX, breathY, scale);
+                    break;
+            }
+
+            ctx.restore();
+        }
+
+        function drawFireBreath(x, y, scale) {
+            const particles = 15;
+            for (let i = 0; i < particles; i++) {
+                const offset = dragon.animateBreath ? time * 5 : 0;
+                const particleX = x + (i * 10 + offset) * scale;
+                const particleY = y + Math.sin(i + offset) * 15 * scale;
+                const size = (particles - i) * 2 * scale;
+
+                const gradient = ctx.createRadialGradient(particleX, particleY, 0, particleX, particleY, size);
+                gradient.addColorStop(0, '#ff0');
+                gradient.addColorStop(0.5, '#f80');
+                gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+
+                ctx.beginPath();
+                ctx.arc(particleX, particleY, size, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+            }
+        }
+
+        function drawIceBreath(x, y, scale) {
+            const particles = 12;
+            for (let i = 0; i < particles; i++) {
+                const offset = dragon.animateBreath ? time * 3 : 0;
+                const particleX = x + (i * 12 + offset) * scale;
+                const particleY = y + Math.sin(i * 0.5 + offset) * 20 * scale;
+                const size = (particles - i) * 1.5 * scale;
+
+                const gradient = ctx.createRadialGradient(particleX, particleY, 0, particleX, particleY, size);
+                gradient.addColorStop(0, '#cff');
+                gradient.addColorStop(0.5, '#8cf');
+                gradient.addColorStop(1, 'rgba(100, 200, 255, 0)');
+
+                ctx.beginPath();
+                ctx.arc(particleX, particleY, size, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+
+                // Ice crystals
+                if (i % 3 === 0) {
+                    ctx.save();
+                    ctx.translate(particleX, particleY);
+                    ctx.rotate(i + offset);
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(-size, 0);
+                    ctx.lineTo(size, 0);
+                    ctx.moveTo(0, -size);
+                    ctx.lineTo(0, size);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+        }
+
+        function drawLightningBreath(x, y, scale) {
+            const segments = 10;
+            const offset = dragon.animateBreath ? Math.sin(time * 5) : 0;
+
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 3 * scale;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#88f';
+
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+
+            let currentX = x;
+            let currentY = y;
+
+            for (let i = 0; i < segments; i++) {
+                currentX += 15 * scale;
+                currentY += (Math.random() - 0.5) * 40 * scale + Math.sin(offset + i) * 20 * scale;
+                ctx.lineTo(currentX, currentY);
+            }
+
+            ctx.stroke();
+
+            // Secondary bolts
+            ctx.lineWidth = 1.5 * scale;
+            ctx.globalAlpha = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            currentX = x;
+            currentY = y;
+            for (let i = 0; i < segments; i++) {
+                currentX += 15 * scale;
+                currentY += (Math.random() - 0.5) * 40 * scale;
+                ctx.lineTo(currentX, currentY);
+            }
+            ctx.stroke();
+
+            ctx.shadowBlur = 0;
+        }
+
+        function drawPoisonBreath(x, y, scale) {
+            const particles = 20;
+            for (let i = 0; i < particles; i++) {
+                const offset = dragon.animateBreath ? time * 2 : 0;
+                const particleX = x + (i * 8 + offset) * scale;
+                const particleY = y + Math.sin(i * 0.3 + offset) * 25 * scale;
+                const size = (Math.sin(i + offset) + 1) * 8 * scale;
+
+                const gradient = ctx.createRadialGradient(particleX, particleY, 0, particleX, particleY, size);
+                gradient.addColorStop(0, '#9f6');
+                gradient.addColorStop(0.5, '#6c3');
+                gradient.addColorStop(1, 'rgba(100, 200, 50, 0)');
+
+                ctx.beginPath();
+                ctx.arc(particleX, particleY, size, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+            }
+        }
+
+        function drawCosmicBreath(x, y, scale) {
+            const particles = 25;
+            for (let i = 0; i < particles; i++) {
+                const offset = dragon.animateBreath ? time * 4 : 0;
+                const angle = (i / particles) * Math.PI * 2 + offset;
+                const radius = i * 3 * scale + offset * 10 * scale;
+                const particleX = x + Math.cos(angle) * radius;
+                const particleY = y + Math.sin(angle) * radius;
+                const size = 5 * scale;
+
+                const hue = (i * 15 + offset * 50) % 360;
+                const gradient = ctx.createRadialGradient(particleX, particleY, 0, particleX, particleY, size);
+                gradient.addColorStop(0, `hsl(${hue}, 100%, 80%)`);
+                gradient.addColorStop(1, `hsla(${hue}, 100%, 50%, 0)`);
+
+                ctx.beginPath();
+                ctx.arc(particleX, particleY, size, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+
+                // Stars
+                if (i % 4 === 0) {
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath();
+                    ctx.arc(particleX, particleY, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+
+        function randomizeDragon() {
+            const bodyTypes = ['classic', 'eastern', 'wyvern', 'drake', 'wyrm'];
+            const headShapes = ['angular', 'rounded', 'crocodilian', 'serpentine', 'skeletal'];
+            const hornStyles = ['none', 'straight', 'curved', 'ram', 'antler', 'crown'];
+            const eyeStyles = ['slit', 'round', 'glowing', 'mystical', 'demonic'];
+            const wingTypes = ['bat', 'feathered', 'insect', 'ethereal', 'skeletal', 'none'];
+            const scalePatterns = ['smooth', 'scales', 'plates', 'spikes', 'crystalline'];
+            const tailStyles = ['tapered', 'spiked', 'club', 'blade', 'serpent'];
+            const breathEffects = ['none', 'fire', 'ice', 'lightning', 'poison', 'cosmic'];
+
+            dragon.bodyType = bodyTypes[Math.floor(Math.random() * bodyTypes.length)];
+            dragon.bodySize = 50 + Math.random() * 100;
+            dragon.bodyLength = 60 + Math.random() * 80;
+            dragon.headShape = headShapes[Math.floor(Math.random() * headShapes.length)];
+            dragon.hornStyle = hornStyles[Math.floor(Math.random() * hornStyles.length)];
+            dragon.eyeStyle = eyeStyles[Math.floor(Math.random() * eyeStyles.length)];
+            dragon.wingType = wingTypes[Math.floor(Math.random() * wingTypes.length)];
+            dragon.wingSize = 50 + Math.random() * 100;
+            dragon.bodyColor = {
+                r: Math.floor(Math.random() * 256),
+                g: Math.floor(Math.random() * 256),
+                b: Math.floor(Math.random() * 256)
+            };
+            dragon.bellyColor = {
+                r: Math.floor(Math.random() * 256),
+                g: Math.floor(Math.random() * 256),
+                b: Math.floor(Math.random() * 256)
+            };
+            dragon.eyeColor = {
+                r: Math.floor(Math.random() * 256),
+                g: Math.floor(Math.random() * 256),
+                b: Math.floor(Math.random() * 256)
+            };
+            dragon.scalePattern = scalePatterns[Math.floor(Math.random() * scalePatterns.length)];
+            dragon.tailStyle = tailStyles[Math.floor(Math.random() * tailStyles.length)];
+            dragon.breathEffect = breathEffects[Math.floor(Math.random() * breathEffects.length)];
+            dragon.animateWings = Math.random() > 0.5;
+            dragon.animateBreath = Math.random() > 0.5;
+            dragon.glowingEyes = Math.random() > 0.5;
+
+            updateControlsFromDragon();
+
+            if (dragon.animateWings || dragon.animateBreath) {
+                startAnimation();
+            } else {
+                stopAnimation();
+            }
+        }
+
+        function updateControlsFromDragon() {
+            document.getElementById('bodyType').value = dragon.bodyType;
+            document.getElementById('bodySize').value = dragon.bodySize;
+            document.getElementById('sizeValue').textContent = Math.round(dragon.bodySize);
+            document.getElementById('bodyLength').value = dragon.bodyLength;
+            document.getElementById('lengthValue').textContent = Math.round(dragon.bodyLength);
+            document.getElementById('headShape').value = dragon.headShape;
+            document.getElementById('hornStyle').value = dragon.hornStyle;
+            document.getElementById('eyeStyle').value = dragon.eyeStyle;
+            document.getElementById('wingType').value = dragon.wingType;
+            document.getElementById('wingSize').value = dragon.wingSize;
+            document.getElementById('wingSizeValue').textContent = Math.round(dragon.wingSize);
+
+            document.getElementById('bodyColorR').value = dragon.bodyColor.r;
+            document.getElementById('bodyColorG').value = dragon.bodyColor.g;
+            document.getElementById('bodyColorB').value = dragon.bodyColor.b;
+            document.getElementById('bellyColorR').value = dragon.bellyColor.r;
+            document.getElementById('bellyColorG').value = dragon.bellyColor.g;
+            document.getElementById('bellyColorB').value = dragon.bellyColor.b;
+            document.getElementById('eyeColorR').value = dragon.eyeColor.r;
+            document.getElementById('eyeColorG').value = dragon.eyeColor.g;
+            document.getElementById('eyeColorB').value = dragon.eyeColor.b;
+
+            document.getElementById('scalePattern').value = dragon.scalePattern;
+            document.getElementById('tailStyle').value = dragon.tailStyle;
+            document.getElementById('breathEffect').value = dragon.breathEffect;
+            document.getElementById('animateWings').checked = dragon.animateWings;
+            document.getElementById('animateBreath').checked = dragon.animateBreath;
+            document.getElementById('glowingEyes').checked = dragon.glowingEyes;
+        }
+
+        function saveDragon() {
+            const link = document.createElement('a');
+            link.download = 'my-dragon.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        // Initialize
+        setupControls();
+        drawDragon();
+    </script>
+</body>
+</html>
