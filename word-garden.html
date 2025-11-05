@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synesthetic Word Garden</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #canvas {
+            flex: 1;
+            display: block;
+        }
+
+        #interface {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 10;
+        }
+
+        #title {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            letter-spacing: 3px;
+        }
+
+        #subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9em;
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+
+        #wordInput {
+            padding: 12px 20px;
+            font-size: 1.2em;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border-radius: 25px;
+            outline: none;
+            width: 300px;
+            text-align: center;
+            font-family: 'Georgia', serif;
+            backdrop-filter: blur(10px);
+        }
+
+        #wordInput::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        #wordInput:focus {
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+
+        #info {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.85em;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="interface">
+        <h1 id="title">Word Garden</h1>
+        <p id="subtitle">Each word blooms into a living creature</p>
+        <input type="text" id="wordInput" placeholder="type a word..." autocomplete="off">
+    </div>
+
+    <canvas id="canvas"></canvas>
+
+    <div id="info">
+        Move your mouse to interact • Each word creates a unique organism based on its sounds and meaning
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const input = document.getElementById('wordInput');
+
+        let width, height;
+        let organisms = [];
+        let particles = [];
+        let mouse = { x: 0, y: 0, active: false };
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // Phonetic and semantic analysis
+        const vowels = 'aeiouAEIOU';
+        const softConsonants = 'lmnrwy';
+        const hardConsonants = 'kptbdgqxz';
+
+        const emotionalWords = {
+            joy: ['happy', 'joy', 'love', 'delight', 'bliss', 'bright', 'sunshine', 'dance', 'laugh', 'smile'],
+            calm: ['peace', 'calm', 'serene', 'gentle', 'soft', 'quiet', 'still', 'whisper', 'float', 'drift'],
+            energy: ['energy', 'power', 'fierce', 'wild', 'storm', 'lightning', 'fire', 'burst', 'electric', 'pulse'],
+            mystery: ['dream', 'shadow', 'mystery', 'night', 'moon', 'star', 'cosmic', 'void', 'ethereal', 'mystic'],
+            nature: ['forest', 'ocean', 'mountain', 'river', 'tree', 'leaf', 'flower', 'garden', 'earth', 'root']
+        };
+
+        function analyzeWord(word) {
+            const lower = word.toLowerCase();
+            const letters = word.split('');
+
+            // Phonetic properties
+            const vowelCount = letters.filter(l => vowels.includes(l)).length;
+            const vowelRatio = vowelCount / letters.length;
+            const softness = letters.filter(l => softConsonants.includes(l.toLowerCase())).length / letters.length;
+            const hardness = letters.filter(l => hardConsonants.includes(l.toLowerCase())).length / letters.length;
+
+            // Emotional category
+            let emotion = 'neutral';
+            let maxMatch = 0;
+            for (const [cat, words] of Object.entries(emotionalWords)) {
+                const match = words.filter(w => lower.includes(w) || w.includes(lower)).length;
+                if (match > maxMatch) {
+                    maxMatch = match;
+                    emotion = cat;
+                }
+            }
+
+            // Character-based properties
+            const length = word.length;
+            const complexity = new Set(letters.map(l => l.toLowerCase())).size / length;
+
+            return {
+                vowelRatio,
+                softness,
+                hardness,
+                emotion,
+                length,
+                complexity,
+                word
+            };
+        }
+
+        function getColorPalette(emotion, properties) {
+            const palettes = {
+                joy: [[255, 223, 0], [255, 107, 107], [78, 205, 196]],
+                calm: [[159, 183, 255], [178, 223, 219], [225, 212, 255]],
+                energy: [[255, 71, 71], [255, 177, 66], [255, 255, 102]],
+                mystery: [[139, 92, 246], [99, 102, 241], [217, 70, 239]],
+                nature: [[52, 211, 153], [110, 231, 183], [167, 243, 208]],
+                neutral: [[168, 162, 255], [255, 182, 193], [173, 216, 230]]
+            };
+
+            const palette = palettes[emotion] || palettes.neutral;
+            return palette.map(rgb => {
+                const brightness = 0.7 + properties.vowelRatio * 0.3;
+                return rgb.map(c => Math.floor(c * brightness));
+            });
+        }
+
+        class Organism {
+            constructor(word, x, y) {
+                this.props = analyzeWord(word);
+                this.x = x;
+                this.y = y;
+                this.age = 0;
+                this.maxAge = 500 + this.props.length * 50;
+                this.colors = getColorPalette(this.props.emotion, this.props);
+
+                // Morphology based on word properties
+                this.segments = Math.min(Math.max(this.props.length, 4), 12);
+                this.baseRadius = 15 + this.props.length * 3;
+                this.limbCount = Math.floor(3 + this.props.complexity * 5);
+                this.limbLength = 40 + this.props.vowelRatio * 60;
+                this.curviness = this.props.softness * 2;
+                this.spikiness = this.props.hardness * 3;
+
+                // Motion based on emotion
+                this.wobbleSpeed = 0.02 + this.props.vowelRatio * 0.03;
+                this.growthSpeed = 0.5 + this.props.complexity * 0.5;
+                this.pulseSpeed = this.props.hardness * 0.05 + 0.02;
+
+                // Initialize limbs
+                this.limbs = [];
+                for (let i = 0; i < this.limbCount; i++) {
+                    this.limbs.push({
+                        angle: (Math.PI * 2 / this.limbCount) * i,
+                        phase: Math.random() * Math.PI * 2,
+                        speed: 0.01 + Math.random() * 0.02
+                    });
+                }
+
+                // Particle emission
+                this.particleTimer = 0;
+                this.emissionRate = 0.1 + this.props.vowelRatio * 0.2;
+            }
+
+            update(mouseX, mouseY) {
+                this.age++;
+
+                // Gentle drift
+                this.x += Math.sin(this.age * 0.01) * 0.3;
+                this.y += Math.cos(this.age * 0.015) * 0.2;
+
+                // Mouse attraction/repulsion
+                if (mouse.active) {
+                    const dx = mouseX - this.x;
+                    const dy = mouseY - this.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 200 && dist > 0) {
+                        const force = (200 - dist) / 200;
+                        const attraction = this.props.softness - this.props.hardness;
+                        this.x += (dx / dist) * force * attraction * 2;
+                        this.y += (dy / dist) * force * attraction * 2;
+                    }
+                }
+
+                // Emit particles
+                this.particleTimer += this.emissionRate;
+                if (this.particleTimer > 1) {
+                    this.particleTimer = 0;
+                    const limb = this.limbs[Math.floor(Math.random() * this.limbs.length)];
+                    const limbX = this.x + Math.cos(limb.angle + this.age * limb.speed) * this.limbLength;
+                    const limbY = this.y + Math.sin(limb.angle + this.age * limb.speed) * this.limbLength;
+
+                    particles.push(new Particle(
+                        limbX, limbY,
+                        this.colors[Math.floor(Math.random() * this.colors.length)]
+                    ));
+                }
+
+                return this.age < this.maxAge;
+            }
+
+            draw() {
+                const growth = Math.min(this.age / 100, 1);
+                const pulse = Math.sin(this.age * this.pulseSpeed) * 0.15 + 1;
+                const radius = this.baseRadius * growth * pulse;
+
+                // Draw limbs
+                this.limbs.forEach((limb, i) => {
+                    const segments = this.segments;
+                    let prevX = this.x;
+                    let prevY = this.y;
+
+                    for (let j = 0; j < segments; j++) {
+                        const t = j / segments;
+                        const wobble = Math.sin(this.age * this.wobbleSpeed + limb.phase + j * 0.5) * this.curviness * 10;
+                        const length = this.limbLength * growth * (1 - t * 0.3);
+                        const angle = limb.angle + this.age * limb.speed + wobble * 0.01;
+
+                        const x = this.x + Math.cos(angle) * length * t;
+                        const y = this.y + Math.sin(angle) * length * t;
+
+                        const colorIndex = Math.floor(t * this.colors.length);
+                        const color = this.colors[Math.min(colorIndex, this.colors.length - 1)];
+                        const alpha = (1 - this.age / this.maxAge) * (1 - t * 0.3);
+
+                        ctx.strokeStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${alpha})`;
+                        ctx.lineWidth = (radius / 3) * (1 - t * 0.7);
+                        ctx.lineCap = 'round';
+
+                        ctx.beginPath();
+                        ctx.moveTo(prevX, prevY);
+                        ctx.lineTo(x, y);
+                        ctx.stroke();
+
+                        // Spiky decorations
+                        if (this.spikiness > 0 && j % 2 === 0) {
+                            const spikeAngle = angle + Math.PI / 2;
+                            const spikeLength = this.spikiness * 8 * (1 - t);
+                            const spikeX = x + Math.cos(spikeAngle) * spikeLength;
+                            const spikeY = y + Math.sin(spikeAngle) * spikeLength;
+
+                            ctx.strokeStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${alpha * 0.6})`;
+                            ctx.lineWidth = 1;
+                            ctx.beginPath();
+                            ctx.moveTo(x, y);
+                            ctx.lineTo(spikeX, spikeY);
+                            ctx.stroke();
+                        }
+
+                        prevX = x;
+                        prevY = y;
+                    }
+                });
+
+                // Draw core
+                const coreGradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, radius);
+                const coreColor = this.colors[0];
+                coreGradient.addColorStop(0, `rgba(${coreColor[0]}, ${coreColor[1]}, ${coreColor[2]}, 0.8)`);
+                coreGradient.addColorStop(0.7, `rgba(${coreColor[0]}, ${coreColor[1]}, ${coreColor[2]}, 0.4)`);
+                coreGradient.addColorStop(1, `rgba(${coreColor[0]}, ${coreColor[1]}, ${coreColor[2]}, 0)`);
+
+                ctx.fillStyle = coreGradient;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Draw word label when young
+                if (this.age < 120) {
+                    const labelAlpha = Math.max(0, (120 - this.age) / 120);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${labelAlpha * 0.7})`;
+                    ctx.font = `${12 + this.props.length}px Georgia`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(this.props.word, this.x, this.y - radius - 15);
+                }
+            }
+        }
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                this.life = 1;
+                this.decay = 0.01 + Math.random() * 0.02;
+                this.color = color;
+                this.size = 2 + Math.random() * 3;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += 0.05; // gravity
+                this.vx *= 0.98;
+                this.vy *= 0.98;
+                this.life -= this.decay;
+                return this.life > 0;
+            }
+
+            draw() {
+                ctx.fillStyle = `rgba(${this.color[0]}, ${this.color[1]}, ${this.color[2]}, ${this.life * 0.6})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Input handling
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && input.value.trim()) {
+                const word = input.value.trim();
+                const x = width / 2 + (Math.random() - 0.5) * 200;
+                const y = height / 2 + (Math.random() - 0.5) * 200;
+                organisms.push(new Organism(word, x, y));
+                input.value = '';
+
+                // Create spawn particles
+                for (let i = 0; i < 20; i++) {
+                    particles.push(new Particle(x, y, [255, 255, 255]));
+                }
+            }
+        });
+
+        // Mouse tracking
+        canvas.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+            mouse.active = true;
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            mouse.active = false;
+        });
+
+        // Animation loop
+        function animate() {
+            // Fade effect for trails
+            ctx.fillStyle = 'rgba(10, 10, 15, 0.15)';
+            ctx.fillRect(0, 0, width, height);
+
+            // Update and draw organisms
+            organisms = organisms.filter(org => {
+                const alive = org.update(mouse.x, mouse.y);
+                if (alive) org.draw();
+                return alive;
+            });
+
+            // Update and draw particles
+            particles = particles.filter(p => {
+                const alive = p.update();
+                if (alive) p.draw();
+                return alive;
+            });
+
+            // Draw connection lines between nearby organisms
+            for (let i = 0; i < organisms.length; i++) {
+                for (let j = i + 1; j < organisms.length; j++) {
+                    const dx = organisms[i].x - organisms[j].x;
+                    const dy = organisms[i].y - organisms[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 150) {
+                        const alpha = (1 - dist / 150) * 0.15;
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(organisms[i].x, organisms[i].y);
+                        ctx.lineTo(organisms[j].x, organisms[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // Start with a few examples
+        setTimeout(() => {
+            const examples = ['dream', 'whisper', 'storm'];
+            examples.forEach((word, i) => {
+                setTimeout(() => {
+                    const angle = (i / examples.length) * Math.PI * 2;
+                    const radius = 200;
+                    const x = width / 2 + Math.cos(angle) * radius;
+                    const y = height / 2 + Math.sin(angle) * radius;
+                    organisms.push(new Organism(word, x, y));
+                }, i * 1000);
+            });
+        }, 500);
+
+        animate();
+    </script>
+</body>
+</html>
